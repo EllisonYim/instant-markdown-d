@@ -15,6 +15,20 @@ REST API
 | Close Webpage    | DELETE      | http://localhost:\<port\> | |
 By default, `<port>` is 8090
 
+Run with Command
+----------------
+```
+# listen 8090 port
+instant-markdown-d
+
+# display content
+cat README.md| curl -X PUT -T - http://localhost:8090
+echo "## Hlo > abc" | curl -X PUT -T - http://localhost:8090
+
+# close the web page
+curl -X DELETE http://localhost:8090
+```
+
 Environment variables
 ---------------------
 

@@ -43,6 +43,17 @@ function writeMarkdown(body) {
   io.sockets.emit('newContent', lastWrittenMarkdown);
 }
 
+// Splits the given string into a meta section and a markdown section if a meta section is present, else returns null
+// https://github.com/j201/meta-marked/blob/master/lib/meta-marked.js
+function splitInput(str) {
+	if (str.slice(0, 3) !== '---') return;
+
+	var matcher = /\n(\.{3}|-{3})/g;
+	var metaEnd = matcher.exec(str);
+
+	return metaEnd && [str.slice(0, metaEnd.index), str.slice(matcher.lastIndex)];
+}
+
 function readAllInput(input, callback) {
   var body = '';
   input.on('data', function(data) {
@@ -52,7 +63,12 @@ function readAllInput(input, callback) {
     }
   });
   input.on('end', function() {
-    callback(body);
+    let getYaml = splitInput(body);
+    if (getYaml) {
+      callback(getYaml[1]);
+    } else {
+      callback(body);
+    }
   });
 }
 

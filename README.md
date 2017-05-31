@@ -12,7 +12,6 @@ REST API
 |---------------------|-------------|---------------------------|--------------------|
 | Refresh Markdown on page | PUT        | http://localhost:\<port\> | \<New Markdown file contents\> |
 | Close Webpage    | DELETE      | http://localhost:\<port\> | |
-
 By default, `<port>` is 8090
 
 Environment variables

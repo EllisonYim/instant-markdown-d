@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
-var MarkdownIt = require('markdown-it');
-var hljs = require('highlight.js');
-var server = require('http').createServer(httpHandler),
+const hljs = require('highlight.js');
+const MarkdownIt = require('markdown-it');
+const server = require('http').createServer(httpHandler),
     exec = require('child_process').exec,
     io = require('socket.io').listen(server),
     os = require('os'),
@@ -19,7 +19,8 @@ if (process.env.INSTANT_MARKDOWN_OPEN_TO_THE_WORLD) {
   server.listen(8090, '127.0.0.1', onListening).once('error', onServerError);
 }
 
-var md = new MarkdownIt({
+
+let md = new MarkdownIt({
   html: true,
   linkify: true,
   highlight: function(str, lang) {
@@ -28,9 +29,10 @@ var md = new MarkdownIt({
         return hljs.highlight(lang, str).value;
       } catch (err) {
         // Do nothing
+        return err.toString()
       }
     } else {
-      return str;
+      return hljs.highlightAuto(str).value;
     }
   }
 });
@@ -95,6 +97,16 @@ function httpHandler(req, res) {
         addSecurityHeaders(req, res, false);
          // Serve the file out of the current working directory
         send(req, githubUrl[1])
+         .root(process.cwd())
+         .pipe(res);
+        return;
+      }
+
+      // https://github.com/suan/instant-markdown-d/pull/12
+      var githubUrlRelative = req.url.match(/(.+(?:\.png|\.jpg|\.gif)$)/);
+      if (githubUrlRelative) {
+        // Serve the file out of the current working directory
+        send(req, githubUrlRelative[1])
          .root(process.cwd())
          .pipe(res);
         return;

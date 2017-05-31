@@ -21,8 +21,7 @@ Environment variables
 * `INSTANT_MARKDOWN_OPEN_TO_THE_WORLD=1` - by default, listening `0.0.0.0:8090`
 
 * `INSTANT_MARKDOWN_ALLOW_UNSAFE_CONTENT=1` - by default, scripts are blocked.
-  Use this preference to allow scripts.
+
 
 * `INSTANT_MARKDOWN_BLOCK_EXTERNAL=1` - by default, external resources such as
-  images, stylesheets, frames and plugins are *allowed*. Use this setting to
-  *block* such external content.
+  images, stylesheets, frames and plugins are *allowed*. 

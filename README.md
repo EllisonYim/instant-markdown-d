@@ -1,10 +1,11 @@
 !nstant-markdown-d
 ================
-instant-markdown-d is a small Node.js server that enables instant compilation and previewing of Markup files. A plugin can easily be written for any text editor to interface with it. One currently exists for VIm: https://github.com/suan/vim-instant-markdown
+instant-markdown-d is a small Node.js server that enables instant compilation and previewing of Markup files. A plugin can easily be written for any text editor to interface with it. One currently exists for Vim: https://github.com/suan/vim-instant-markdown
 
 Installation
 ------------
-- `[sudo] npm -g install instant-markdown-d`
+- `git clone https://github.com/yantze/instant-markdown-d /path/to/dir`
+- `ln -s /path/to/dir/instant-markdown-d /usr/local/bin/`
 
 REST API
 --------
@@ -17,10 +18,7 @@ By default, `<port>` is 8090
 Environment variables
 ---------------------
 
-* `INSTANT_MARKDOWN_OPEN_TO_THE_WORLD=1` - by default, the server only listens
-  on localhost. To make the server available to others in your network, set this
-  environment variable to a non-empty value. Only use this setting on trusted
-  networks!
+* `INSTANT_MARKDOWN_OPEN_TO_THE_WORLD=1` - by default, listening `0.0.0.0:8090`
 
 * `INSTANT_MARKDOWN_ALLOW_UNSAFE_CONTENT=1` - by default, scripts are blocked.
   Use this preference to allow scripts.

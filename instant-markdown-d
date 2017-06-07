@@ -172,7 +172,9 @@ function onListening() {
   if (os.platform() === 'win32') {
     exec('start /b http://localhost:8090', function(error, stdout, stderr){});
   } else if (os.platform() === 'darwin') {
-    exec('open -g http://localhost:8090', function(error, stdout, stderr){});
+    var generalOpen = 'open -g http://localhost:8090';
+    var chromeOpen = '"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --profile-directory="Default" --app="data:text/html,<html><body><script>window.moveTo(0,0);window.resizeTo(1278,1054);window.location=\'http://localhost:8090\';</script></body></html>"';
+    exec(chromeOpen, function(error, stdout, stderr){});
   } else { // assume unix/linux
     exec('xdg-open http://localhost:8090', function(error, stdout, stderr){});
   }

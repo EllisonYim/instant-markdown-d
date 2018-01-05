@@ -14,9 +14,20 @@ New Feature
 
 Installation
 ------------
+Install instant-markdown-d client
 ```
 git clone https://github.com/yantze/instant-markdown-d /path/to/dir
-ln -s /path/to/dir/instant-markdown-d /usr/local/bin/
+ln -s /path/to/dir/instant-markdown-d ~/.bin
+```
+
+Install instant-markdown-d server
+```
+npm -g install instant-markdown-d
+```
+
+Install instant-markdown-d vim plugin by Vim Plugin Manager
+```
+Plug 'suan/vim-instant-markdown'
 ```
 
 REST API

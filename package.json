@@ -4,14 +4,14 @@
     "description": "Instantly-updating Markdown Server. Original author: Suan-Aik Yeo <yeosuanaik@gmail.com>",
     "version": "2.0.1",
     "engine": "node",
-    "main": "instant-markdown-server",
+    "main": "another-instant-markdown-d",
     "preferGlobal": "true",
     "bin": {
-        "instant-markdown-server": "./instant-markdown-server"
+        "instant-markdown-d": "./instant-markdown-d"
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/yantze/instant-markdown-server.git"
+        "url": "https://github.com/yantze/instant-markdown-d.git"
     },
     "dependencies": {
         "github-markdown-css": "^2.6.0",
@@ -19,5 +19,7 @@
         "markdown-it": "^8.4.2",
         "send": "^0.16.2",
         "socket.io": "^2.2.0"
-    }
+    },
+    "keywords": ["vim", "markdown", "server", "instant"],
+    "license": "MIT"
 }

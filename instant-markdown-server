@@ -1,0 +1,218 @@
+#!/usr/bin/env node
+
+const os = require('os')
+const fs = require('fs')
+const http = require('http')
+
+const send = require('send')
+const hljs = require('highlight.js')
+const MarkdownIt = require('markdown-it')
+const exec = require('child_process').exec
+
+const server = http.createServer(httpHandler)
+const io = require('socket.io').listen(server)
+
+// WARNING: By setting this environment variable, anyone on your network may
+// run arbitrary code in your browser and read arbitrary files in the working
+// directory of the open file!
+const LISTENING_PORT = 8090
+const LISTENTING_HOST = process.env.INSTANT_MARKDOWN_OPEN_TO_THE_WORLD ? '0.0.0.0' : '127.0.0.1'
+server.listen(LISTENING_PORT, LISTENTING_HOST, onListening).once('error', onServerError)
+
+const SERVER_HOST = `localhost:${LISTENING_PORT}`
+
+let lastWrittenMarkdown = ''
+
+io.sockets.on('connection', function(sock){
+    process.stdout.write('connection established!\n')
+    if (lastWrittenMarkdown) {
+        sock.emit('newContent', lastWrittenMarkdown)
+    }
+})
+
+async function onListening () {
+
+    if (os.platform() === 'win32') {
+        exec(`start /b http://${SERVER_HOST}`, function(/* error, stdout, stderr */){})
+    } else if (os.platform() === 'darwin') {
+        let openCmd = ''
+        const chromePath = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+        if (fs.existsSync(chromePath)) {
+            openCmd = `"${chromePath}" --app="data:text/html,<html><body><script>window.moveTo(0,0);window.resizeTo(800, 600);window.location='http://${SERVER_HOST}';</script></body></html>"`
+        } else {
+            openCmd = `open -g http://${SERVER_HOST}`
+        }
+        process.stdout.write(`openCmd: ${openCmd} \n`)
+        exec(openCmd, function(/* error, stdout, stderr */){})
+    } else { // assume unix/linux
+        exec(`xdg-open http://${SERVER_HOST}`, function(/* error, stdout, stderr */){})
+    }
+
+    writeMarkdown(await readStream(process.stdin))
+
+    process.stdin.resume()
+}
+
+async function onServerError (e) {
+
+    if (e.code === 'EADDRINUSE') {
+        const data = await readStream(process.stdin)
+        // Forward to existing instant-markdown-d server.
+        require('http').request({
+            hostname: 'localhost',
+            port: 8090,
+            path: '/',
+            method: 'PUT',
+        }).end(data)
+
+        process.stdin.resume()
+
+        return
+    }
+
+    // Another unexpected error. Raise it again.
+    throw e
+}
+
+const md = new MarkdownIt({
+    html: true,
+    linkify: true,
+    highlight: function(str, lang) {
+        if (lang && hljs.getLanguage(lang)) {
+            try {
+                return hljs.highlight(lang, str).value
+            } catch (err) {
+                // Do nothing
+                return err.toString()
+            }
+        } else {
+            return hljs.highlightAuto(str).value
+        }
+    }
+})
+
+function readStream(input) {
+    return new Promise((resolve, reject) => {
+
+        let body = ''
+
+        input.on('data', function(data) {
+            body += data
+            if (body.length > 1e6) {
+                reject(new Error('The request body is too long.'))
+            }
+        })
+
+        input.on('end', function() {
+            let mySplitInput = splitInput(body)
+            if (mySplitInput) {
+                resolve(mySplitInput[1])
+            } else {
+                resolve(body)
+            }
+        })
+    })
+}
+
+function writeMarkdown(body) {
+    lastWrittenMarkdown = md.render(body)
+    io.sockets.emit('newContent', lastWrittenMarkdown)
+}
+
+async function httpHandler (req, res) {
+    switch(req.method) {
+    case 'GET':
+        // Example: /my-repo/raw/master/sub-dir/some.png
+        var githubUrl = req.url.match(/\/[^/]+\/raw\/[^/]+\/(.+)/)
+        if (githubUrl) {
+            addSecurityHeaders(req, res, false)
+            // Serve the file out of the current working directory
+            send(req, githubUrl[1])
+                .root(process.cwd())
+                .pipe(res)
+            return
+        }
+
+        // https://github.com/suan/instant-markdown-d/pull/12
+        var githubUrlRelative = req.url.match(/(.+(?:\.png|\.jpg|\.gif)$)/)
+        if (githubUrlRelative) {
+        // Serve the file out of the current working directory
+            send(req, githubUrlRelative[1])
+                .root(process.cwd())
+                .pipe(res)
+            return
+        }
+
+        var isIndexFile = /^\/(index\.html)?(\?|$)/.test(req.url)
+        addSecurityHeaders(req, res, isIndexFile)
+
+        // Otherwise serve the file from the directory this module is in
+        send(req, req.url)
+            .root(__dirname)
+            .pipe(res)
+        break
+
+    // case 'HEAD':
+        // res.writeHead(200);
+        // res.end();
+        // exec('open -g http://localhost:8090', function(error, stdout, stderr){
+        // http.request({port: 8090})
+        // });
+        // break;
+
+    case 'DELETE':
+        io.sockets.emit('die')
+        process.exit()
+        break
+
+    case 'PUT':
+        writeMarkdown(await readStream(req))
+        res.writeHead(200)
+        res.end()
+        break
+
+    default:
+    }
+}
+
+// Splits the given string into a meta section and a markdown section if a meta section is present, else returns null
+// https://github.com/j201/meta-marked/blob/master/lib/meta-marked.js
+function splitInput(str) {
+    if (str.slice(0, 3) !== '---') return
+
+    const matcher = /\n(\.{3}|-{3})/g
+    const metaEnd = matcher.exec(str)
+
+    return metaEnd && [str.slice(0, metaEnd.index), str.slice(matcher.lastIndex)]
+}
+
+function addSecurityHeaders(req, res, isIndexFile) {
+    const csp = []
+
+    // Cannot use 'self' because Chrome does not treat 'self' as http://host
+    // when the sandbox directive is set.
+    const HTTP_HOST = req.headers.host || SERVER_HOST
+    const CSP_SELF = 'http://' + HTTP_HOST
+
+    if (!process.env.INSTANT_MARKDOWN_ALLOW_UNSAFE_CONTENT) {
+        if (isIndexFile) {
+            // index.html will drop the scripting capabilities upon load.
+            csp.push('script-src ' + CSP_SELF + ' \'unsafe-inline\'')
+            csp.push('sandbox allow-scripts allow-modals allow-forms')
+        } else {
+            csp.push('script-src ')
+        }
+    }
+    if (process.env.INSTANT_MARKDOWN_BLOCK_EXTERNAL) {
+        csp.push('default-src data: ' + CSP_SELF)
+        csp.push('style-src data: \'unsafe-inline\' ' + CSP_SELF)
+        csp.push('connect-src ' + CSP_SELF + ' ws://' + HTTP_HOST)
+    }
+    res.setHeader('X-Content-Type-Options', 'nosniff')
+    res.setHeader('Content-Security-Policy', csp.join('; '))
+    if (isIndexFile) {
+    // Never cache the index file, to make sure that changes to the CSP are
+    // picked up across soft reloads.
+        res.setHeader('Cache-Control', 'no-store')
+    }
+}

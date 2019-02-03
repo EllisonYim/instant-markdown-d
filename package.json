@@ -1,19 +1,23 @@
 {
-  "author": "Suan-Aik Yeo <yeosuanaik@gmail.com>",
-  "name": "instant-markdown-d",
-  "description": "Instantly-updating Markdown Server",
-  "version": "0.1.0",
-  "engine": "node",
-  "main": "instant-markdown-d",
-  "preferGlobal": "true",
-  "bin": {
-    "instant-markdown-d": "./instant-markdown-d"
-  },
-  "dependencies": {
-    "github-markdown-css": "^2.6.0",
-    "highlight.js": "^9.12.0",
-    "markdown-it": "^8.3.1",
-    "send": "~0.1.0",
-    "socket.io": "^1.4.5"
-  }
+    "author": "Yantze <ivastiny@gmail.com> (https://vastiny.com)",
+    "name": "instant-markdown-server",
+    "description": "Instantly-updating Markdown Server. Original author: Suan-Aik Yeo <yeosuanaik@gmail.com>",
+    "version": "2.0.1",
+    "engine": "node",
+    "main": "instant-markdown-server",
+    "preferGlobal": "true",
+    "bin": {
+        "instant-markdown-server": "./instant-markdown-server"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/yantze/instant-markdown-server.git"
+    },
+    "dependencies": {
+        "github-markdown-css": "^2.6.0",
+        "highlight.js": "^9.14.2",
+        "markdown-it": "^8.4.2",
+        "send": "^0.16.2",
+        "socket.io": "^2.2.0"
+    }
 }

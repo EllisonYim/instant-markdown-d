@@ -1,10 +1,10 @@
 {
     "author": "Yantze <ivastiny@gmail.com> (https://vastiny.com)",
-    "name": "instant-markdown-server",
+    "name": "another-instant-markdown-d",
     "description": "Instantly-updating Markdown Server. Original author: Suan-Aik Yeo <yeosuanaik@gmail.com>",
     "version": "2.0.2",
     "engine": "node",
-    "main": "another-instant-markdown-d",
+    "main": "instant-markdown-d",
     "preferGlobal": "true",
     "bin": {
         "instant-markdown-d": "./instant-markdown-d"

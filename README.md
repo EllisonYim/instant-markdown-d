@@ -16,7 +16,7 @@ Installation
 
 Install another-instant-markdown-d
 ```sh
-npm install another-instant-markdown-d
+npm install -g another-instant-markdown-d
 ```
 
 Install instant-markdown-d vim plugin by Vim Plugin Manager
@@ -27,6 +27,11 @@ Plug 'suan/vim-instant-markdown'
 Start to preview md file, run command in vim
 ```
 :InstantMarkdownPreview
+```
+
+Or use a map:
+```
+map <leader>rp :InstantMarkdownPreview<CR>
 ```
 
 Run with Command
